@@ -1,15 +1,22 @@
 {
-    "name"       : "agl/more-cron",
-    "type"       : "agl-module",
-    "description": "Additional Cron module for AGL.",
-    "keywords"   : [ "agl", "cron" ],
-    "homepage"   : "http://www.agl.io/",
-    "license"    : "MIT",
+    "name": "agl/more-cron",
+    "description": "AGL Framework / Cron package.",
+    "keywords": [ "agl", "cron" ],
+    "homepage": "http://www.agl.io/",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alexis Galbourdin",
+            "email": "ask@agl.io"
+        }
+    ],
     "require": {
-        "php"                : ">=5.3.0",
-        "composer/installers": "*"
+        "php": ">=5.3.0",
+        "mtdowling/cron-expression": "1.x"
     },
-    "extra": {
-        "installer-name": "Cron"
+    "autoload": {
+        "psr-0": {
+            "Agl\\More\\Cron": "src/"
+        }
     }
 }

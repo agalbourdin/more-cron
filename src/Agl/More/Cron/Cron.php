@@ -1,6 +1,9 @@
 <?php
 namespace Agl\More\Cron;
 
+use \Agl\Core\Agl,
+	\Cron\CronExpression;
+
 /**
  * Generic methods to manipulate dates.
  *
@@ -11,26 +14,12 @@ namespace Agl\More\Cron;
 
 class Cron
 {
-	/**
-     * Library filename.
-     */
-    const LIB = 'cron.phar';
-
     /**
      * List of cron jobs to run.
      *
      * @var array
      */
     private $_jobsToRun = array();
-
-	/**
-	 * Cron constructor.
-	 * Load the CronExpression library.
-	 */
-	public function __construct()
-	{
-		\Agl::loadModuleLib(__DIR__, self::LIB);
-	}
 
 	/**
 	 * Load the cron jobs that should be runned and register them into the
@@ -40,17 +29,15 @@ class Cron
 	 */
 	private function _loadJobsToRun()
 	{
-		$jobs = \Agl::app()->getConfig('@module[' . \Agl::AGL_MORE_POOL . '/cron]/job', true);
+		$jobs = Agl::app()->getConfig('@module[' . Agl::AGL_MORE_POOL . '/cron]');
+		if (! is_array($jobs)) {
+			return $this;
+		}
 
-		foreach ($jobs as $job) {
-			if (is_array($job)
-                and isset($job['instance'])
-                and isset($job['method'])
-                and isset($job['cron_expr'])) {
-                if ($this->_isDue($job['cron_expr'])) {
-					$this->_jobsToRun[] = $job;
-				}
-            }
+		foreach ($jobs as $expr => $job) {
+            if ($this->_isDue($expr)) {
+				$this->_jobsToRun[] = $job;
+			}
 		}
 
 		return $this;
@@ -71,11 +58,11 @@ class Cron
 	 */
 	private function _isDue($pCronExpr)
 	{
-		$date = \Agl::getSingleton(\Agl::AGL_CORE_DIR . '/data/date');
+		$date        = Agl::getSingleton(Agl::AGL_CORE_DIR . '/data/date');
 		$currentDate = $date::toTz(date('Y-m-d H:i'));
 		$currentTime = strtotime($currentDate);
 
-		$cron = \Cron\CronExpression::factory($pCronExpr);
+		$cron = CronExpression::factory($pCronExpr);
 
 		return ($currentTime == $cron->getNextRunDate($currentDate, 0, true)->getTimestamp());
 	}
@@ -89,11 +76,17 @@ class Cron
 	{
 		$this->_loadJobsToRun();
 
-		foreach ($this->_jobsToRun as $key => $job) {
-            $instance = \Agl::getSingleton($job['instance']);
-            if ($instance and method_exists($instance, $job['method'])) {
-                $instance::$job['method']();
-            }
+		foreach ($this->_jobsToRun as $job) {
+			foreach ($job as $class => $methods) {
+				if (is_array($methods)) {
+	                $instance = Agl::getSingleton($class);
+	                foreach ($methods as $method) {
+	                    if ($instance and method_exists($instance, $method)) {
+	                        $instance::$method();
+	                    }
+	                }
+	            }
+			}
 		}
 
 		$this->_jobsToRun = array();
