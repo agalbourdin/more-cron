@@ -9,9 +9,13 @@ Add the following package to the `require` section of your application's `compos
 
 	"agl/more-cron": "*"
 
+Then run the following command:
+
+	php composer.phar update
+
 ## Configuration
 
-In your application, create a file `app/etc/config/more/cron.json`. Cron Jobs will be declared in this file.
+Edit `app/etc/config/more/cron.json` to create your Cron Jobs.
 
 Example:
 
@@ -39,12 +43,14 @@ Example:
 
 ## Usage
 
-**Instantiate Cron class:**
+To run dued Cron Jobs (based on the current date):
 
 	$cron = Agl::getInstance('more/cron');
-
-**Run Cron Jobs**
-
 	$cron->run();
 
-Cron Jobs will be automatically runned if dued, based on the current date.
+A PHP script that will be called by Cron can look like this:
+
+	<?php
+	require('./app/php/run.php');
+	$cron = Agl::getInstance('more/cron');
+	$cron->run();
