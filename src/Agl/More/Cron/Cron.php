@@ -2,6 +2,7 @@
 namespace Agl\More\Cron;
 
 use \Agl\Core\Agl,
+	\Agl\Core\Data\Date as DateData,
 	\Cron\CronExpression;
 
 /**
@@ -20,6 +21,14 @@ class Cron
      * @var array
      */
     private $_jobsToRun = array();
+
+    /**
+     * Class constructor. Load jobs to run.
+     */
+    public function __construct()
+    {
+    	$this->_loadJobsToRun();
+    }
 
 	/**
 	 * Load the cron jobs that should be runned and register them into the
@@ -58,8 +67,7 @@ class Cron
 	 */
 	private function _isDue($pCronExpr)
 	{
-		$date        = Agl::getSingleton(Agl::AGL_CORE_DIR . '/data/date');
-		$currentDate = $date::toTz(date('Y-m-d H:i'));
+		$currentDate = DateData::toTz(date('Y-m-d H:i'));
 		$currentTime = strtotime($currentDate);
 
 		$cron = CronExpression::factory($pCronExpr);
@@ -74,8 +82,6 @@ class Cron
 	 */
 	public function run()
 	{
-		$this->_loadJobsToRun();
-
 		foreach ($this->_jobsToRun as $job) {
 			foreach ($job as $class => $methods) {
 				if (is_array($methods)) {
