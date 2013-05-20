@@ -15,42 +15,40 @@ Then run the following command:
 
 ## Configuration
 
-Edit `app/etc/config/more/cron.json` to create your Cron Jobs.
+Edit `app/etc/config/more/cron/main.php` to create your Cron Jobs.
 
-Example:
+You will find an example in `app/etc/config/more/cron/samples/main.sample.php`:
 
-	{
-		"0 1 * * *": {
-			"model/user": [
-				"deleteInactive",
-				"sendDailyMail"
-			],
+	return array(
 
-			"model/log": [
-				"clean"
-			]
-		},
+		/**
+		 * UserModel::deleteInactive(), UserModel::sendDailyMail() and
+		 * LogModel::clean() will be called everyday at 1am.
+		 */
+		'0 1 * * *' => array(
+			'model/user' => array(
+				'deleteInactive',
+				'sendDailyMail'
+			),
 
-		"@hourly": {
-			"helper/system/backup": [
-				"backupDb"
-			]
-		},
-	}
+			'model/log' => array(
+				'clean'
+			)
+		),
 
-* UserModel::deleteInactive(), UserModel::sendDailyMail() and LogModel::clean() will be called everyday at 1 am
-* SystemBackupHelper::backupDb() will be called every hour
+		/**
+		 * SystemBackupHelper::backupDb() will be called every hour.
+		 */
+		'@hourly' => array(
+			'helper/system/backup' => array(
+				'backupDb'
+			)
+		)
+
+	);
 
 ## Usage
 
 To run dued Cron Jobs (based on the current date):
 
-	$cron = Agl::getInstance('more/cron');
-	$cron->run();
-
-A PHP script that will be called by Cron can look like this:
-
-	<?php
-	require('./app/php/run.php');
-	$cron = Agl::getInstance('more/cron');
-	$cron->run();
+	Agl::getInstance('more/cron')->run();

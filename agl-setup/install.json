@@ -1,6 +1,0 @@
-{
-	"config/main.json": {
-		"dir": "app/etc/config/more/cron/",
-		"file": "main.json"
-	}
-}
