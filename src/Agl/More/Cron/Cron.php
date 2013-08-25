@@ -24,21 +24,18 @@ class Cron
 
     /**
      * Class constructor. Load jobs to run.
+     *
+     * Load the cron jobs that should be runned and register them into the
+	 * _jobsToRun array.
      */
-    public function __construct()
+    public function __construct($pJobs = NULL)
     {
-    	$this->_loadJobsToRun();
-    }
+    	if ($pJobs === NULL) {
+    		$jobs = Agl::app()->getConfig('@module[' . Agl::AGL_MORE_POOL . '/cron]');
+    	} else {
+    		$jobs = $pJobs;
+    	}
 
-	/**
-	 * Load the cron jobs that should be runned and register them into the
-	 * _jobsToRun class array.
-	 *
-	 * @return Cron
-	 */
-	private function _loadJobsToRun()
-	{
-		$jobs = Agl::app()->getConfig('@module[' . Agl::AGL_MORE_POOL . '/cron]');
 		if (! is_array($jobs)) {
 			return $this;
 		}
@@ -48,9 +45,7 @@ class Cron
 				$this->_jobsToRun[] = $job;
 			}
 		}
-
-		return $this;
-	}
+    }
 
 	/**
 	 * Check if a cron job should be run.
@@ -67,7 +62,7 @@ class Cron
 	 */
 	private function _isDue($pCronExpr)
 	{
-		$currentDate = DateData::toTz(date('Y-m-d H:i'));
+		$currentDate = DateData::toTz(date('Y-m-d H:i'), 'Europe/Paris');
 		$currentTime = strtotime($currentDate);
 
 		$cron = CronExpression::factory($pCronExpr);
@@ -78,25 +73,40 @@ class Cron
 	/**
 	 * Load the cron jobs to run and execute them.
 	 *
-	 * @return Cron
+	 * @return int Number of runned tasks
 	 */
 	public function run()
 	{
+		$i = 0;
+
 		foreach ($this->_jobsToRun as $job) {
 			foreach ($job as $class => $methods) {
 				if (is_array($methods)) {
 	                $instance = Agl::getSingleton($class);
-	                foreach ($methods as $method) {
-	                    if ($instance and method_exists($instance, $method)) {
-	                        $instance::$method();
-	                    }
-	                }
+	                if ($instance) {
+		                foreach ($methods as $method) {
+		                    if (method_exists($instance, $method)) {
+		                        $instance::$method();
+		                        $i++;
+		                    }
+		                }
+		            }
 	            }
 			}
 		}
 
 		$this->_jobsToRun = array();
 
-		return $this;
+		return $i;
+	}
+
+	/**
+	 * Return the list of jubs to run.
+	 *
+	 * @return array
+	 */
+	public function getJobsToRun()
+	{
+		return $this->_jobsToRun;
 	}
 }

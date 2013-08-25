@@ -18,5 +18,7 @@
         "psr-0": {
             "Agl\\More\\Cron": "src/"
         }
-    }
+    },
+
+    "minimum-stability": "dev"
 }
