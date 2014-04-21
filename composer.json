@@ -15,8 +15,8 @@
         "mtdowling/cron-expression": "1.*"
     },
     "autoload": {
-        "psr-0": {
-            "Agl\\More\\Cron": "src/"
+        "psr-4": {
+            "Agl\\More\\Cron\\": "src/"
         }
     },
 
